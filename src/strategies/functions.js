@@ -1,4 +1,4 @@
-const colorRegex = /((rgb|hsl|lch|oklch)a?\(\s*[\d]*\.?[\d]+%?\s*(?<commaOrSpace>\s|,)\s*[\d]*\.?[\d]+%?\s*\k<commaOrSpace>\s*[\d]*\.?[\d]+%?(\s*(\k<commaOrSpace>|\/)\s*[\d]*\.?[\d]+%?)?\s*\))/gi;
+const colorRegex = /((rgb|hsl|lch|oklch)a?\(\s*[\d]*\.?[\d]+%?\s*(?<commaOrSpace>\s|,)\s*[\d]*\.?[\d]+%?\s*\k<commaOrSpace>\s*[\d]*\.?[\d]+%?(\s*(\k<commaOrSpace>|\/)\s*[\d]*\.?[\d]+%?)?\s*\))|Color\.fromARGB\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)/gi;
 const cssVarRegex = /(--[\w-]+-(rgb|hsl|lch|oklch)):\s*([\d]*\.?[\d]+\s+[\d]*\.?[\d]+\s+[\d]*\.?[\d]+);/gi;
 const allowedColorFunctions = ['rgb', 'hsl', 'lch', 'oklch'];
 
@@ -13,6 +13,13 @@ function createColorFunctionObject(match) {
   const start = match.index;
   const end = start + match[0].length;
   let color = match[0];
+
+  if (color.startsWith('Color.fromARGB')) {
+    // Extract ARGB values
+    const [ , a, r, g, b ] = color.match(/Color\.fromARGB\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/);
+    // Convert to rgba format for simplicity in highlighting
+    color = `rgba(${r}, ${g}, ${b}, ${a / 255})`;
+  }
 
   const cssVarMatchArray = Array.from(color.matchAll(cssVarRegex));
 
